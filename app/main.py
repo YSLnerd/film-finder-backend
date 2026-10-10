@@ -1,6 +1,7 @@
+#Точка входа в программу
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+#Импорт роутеров
 from app.routers import auth, movies, search, favourites, stats, admin
 
 
@@ -9,7 +10,7 @@ app = FastAPI(
     description="API для сервиса подбора фильмов",
     version="0.1.0"
 )
-
+#Настройка для того чтобы мобильный клиент и веб сайт могли обмениваться с бекэндом
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,7 +18,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+#Подключение роутеров
 app.include_router(auth.router)
 app.include_router(movies.router)
 app.include_router(search.router)

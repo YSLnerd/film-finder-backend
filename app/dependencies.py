@@ -5,6 +5,7 @@ from app.database import get_db
 from app.models import User
 from app.auth import decode_access_token
 security = HTTPBearer()
+#какой именно пользователь делает запрос
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)) -> int:
@@ -36,6 +37,7 @@ def get_current_user(
             detail="Пользователь не найден",
         )
     return user_id
+#Просверка прав админа
 def require_admin(
     current_user_id: int = Depends(get_current_user),
     db: Session = Depends(get_db)) -> int:

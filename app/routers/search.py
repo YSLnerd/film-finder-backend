@@ -8,22 +8,13 @@ from app.schemas import MovieShort, ActorResponse, DirectorResponse
 
 
 router = APIRouter(prefix="/search", tags=["search"])
-
-
-# ============================================
-# ПОИСК ФИЛЬМОВ
-# ============================================
-
+#Поиск фильмов
 @router.get("/movies", response_model=list[MovieShort])
 def search_movies(
     query: str = Query(..., min_length=1, description="Название фильма (рус/ориг)"),
     limit: int = Query(30, ge=1, le=100, description="Максимум результатов"),
     db: Session = Depends(get_db)
 ):
-    """
-    Публичный поиск фильмов по названию.
-    Ищет по rus_title, orig_title и title.
-    """
     pattern = f"%{query}%"
     return (
         db.query(Movie)
@@ -38,22 +29,13 @@ def search_movies(
         .limit(limit)
         .all()
     )
-
-
-# ============================================
-# ПОИСК АКТЁРОВ
-# ============================================
-
+#Поииск актёров
 @router.get("/actors", response_model=list[ActorResponse])
 def search_actors(
     query: str = Query(..., min_length=1, description="Имя или фамилия актёра"),
     limit: int = Query(30, ge=1, le=100),
     db: Session = Depends(get_db)
 ):
-    """
-    Публичный поиск актёров по имени или фамилии.
-    Регистронезависимый.
-    """
     pattern = f"%{query}%"
     return (
         db.query(Actor)
@@ -67,22 +49,13 @@ def search_actors(
         .limit(limit)
         .all()
     )
-
-
-# ============================================
-# ПОИСК РЕЖИССЁРОВ
-# ============================================
-
+#Поиск режиссёров
 @router.get("/directors", response_model=list[DirectorResponse])
 def search_directors(
     query: str = Query(..., min_length=1, description="Имя или фамилия режиссёра"),
     limit: int = Query(30, ge=1, le=100),
     db: Session = Depends(get_db)
 ):
-    """
-    Публичный поиск режиссёров по имени или фамилии.
-    Регистронезависимый.
-    """
     pattern = f"%{query}%"
     return (
         db.query(Director)

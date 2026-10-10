@@ -12,36 +12,21 @@ from app.schemas import MovieShort, MovieDetail, GenreResponse
 
 
 router = APIRouter(prefix="/movies", tags=["movies"])
-
-
-# ============================================
-# СПРАВОЧНИКИ
-# ============================================
-
+#Список жанров из БД
 @router.get("/genres", response_model=list[GenreResponse])
 def get_genres(db: Session = Depends(get_db)):
-    """Список всех жанров"""
     return db.query(Genre).order_by(Genre.name_ru).all()
-
-
+#Список настроений из БД
 @router.get("/moods", response_model=list[str])
 def get_moods(db: Session = Depends(get_db)):
-    """Список всех настроений"""
     moods = db.query(Movie.mood).distinct().order_by(Movie.mood).all()
     return [m[0] for m in moods if m[0]]
-
-
+#Список рейтингов из БД
 @router.get("/age-ratings", response_model=list[str])
 def get_age_ratings(db: Session = Depends(get_db)):
-    """Список возрастных рейтингов"""
     ratings = db.query(Movie.age_rating).distinct().order_by(Movie.age_rating).all()
     return [r[0] for r in ratings if r[0]]
-
-
-# ============================================
-# ПОДБОР ФИЛЬМА
-# ============================================
-
+#Подбор фильма
 @router.get("/recommend", response_model=MovieDetail)
 def recommend_movie(
     genre: str = Query(...),
@@ -59,7 +44,6 @@ def recommend_movie(
         else: min_len, max_len = 0, 500
     else:
         min_len, max_len = 0, 500
-
     if year_period:
         if year_period == "2020-2026": min_year, max_year = 2020, 2026
         elif year_period == "2010-2019": min_year, max_year = 2010, 2019
@@ -68,7 +52,6 @@ def recommend_movie(
         else: min_year, max_year = 1800, 2026
     else:
         min_year, max_year = 1800, 2026
-
     movie = (
         db.query(Movie)
         .join(GenreMovie, GenreMovie.id_movie == Movie.id_movie)
@@ -83,16 +66,10 @@ def recommend_movie(
         .order_by(func.random())
         .first()
     )
-
     if not movie:
         raise HTTPException(404, "Фильм по заданным параметрам не найден")
     return movie
-
-
-# ============================================
-# ПОИСК ФИЛЬМОВ
-# ============================================
-
+#Поиск фильма
 @router.get("/search", response_model=list[MovieShort])
 def search_movies(
     query: str = Query(..., min_length=1),
@@ -111,15 +88,9 @@ def search_movies(
         .limit(limit)
         .all()
     )
-
-
-# ============================================
-# ВСЕ АКТЁРЫ (для селектов)
-# ============================================
-
+#Поиск всех актёров фильма
 @router.get("/actors")
 def get_all_actors(db: Session = Depends(get_db)):
-    """Список всех актёров"""
     actors = db.query(Actor).order_by(Actor.first_name, Actor.second_name).all()
     return [
         {
@@ -133,15 +104,9 @@ def get_all_actors(db: Session = Depends(get_db)):
         }
         for a in actors
     ]
-
-
-# ============================================
-# ВСЕ РЕЖИССЁРЫ (для селектов)
-# ============================================
-
+#Поиск всех режиссёров фильма
 @router.get("/directors")
 def get_all_directors(db: Session = Depends(get_db)):
-    """Список всех режиссёров"""
     directors = db.query(Director).order_by(Director.first_name, Director.second_name).all()
     return [
         {
@@ -155,12 +120,7 @@ def get_all_directors(db: Session = Depends(get_db)):
         }
         for d in directors
     ]
-
-
-# ============================================
-# ОДИН АКТЁР
-# ============================================
-
+#выодит список фильмов для актёра
 @router.get("/actors/{actor_id}")
 def get_actor(actor_id: int, db: Session = Depends(get_db)):
     actor = db.query(Actor).filter(Actor.id_actor == actor_id).first()
@@ -185,12 +145,7 @@ def get_actor(actor_id: int, db: Session = Depends(get_db)):
         "actor_country": actor.actor_country,
         "movies": [{"id_movie": m.id_movie, "rus_title": m.rus_title} for m in films],
     }
-
-
-# ============================================
-# ОДИН РЕЖИССЁР
-# ============================================
-
+#выодит список фильмов для актёра
 @router.get("/directors/{director_id}")
 def get_director(director_id: int, db: Session = Depends(get_db)):
     director = db.query(Director).filter(Director.id_director == director_id).first()
@@ -215,12 +170,7 @@ def get_director(director_id: int, db: Session = Depends(get_db)):
         "director_country": director.director_country,
         "movies": [{"id_movie": m.id_movie, "rus_title": m.rus_title} for m in films],
     }
-
-
-# ============================================
-# ДЕТАЛИ ФИЛЬМА (ПОСЛЕДНИЙ!)
-# ============================================
-
+#Все данные фильма
 @router.get("/{movie_id}", response_model=MovieDetail)
 def get_movie(movie_id: int, db: Session = Depends(get_db)):
     movie = db.query(Movie).filter(Movie.id_movie == movie_id).first()
